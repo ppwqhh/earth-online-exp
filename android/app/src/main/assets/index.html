@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>地球online · 个人经验工作台</title>
+<title>蛋丁</title>
 <meta name="theme-color" content="#0B0E14">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon.jpg">
@@ -148,6 +148,7 @@
   .btn-row .btn{flex:1;}
   .theme-row{display:flex;gap:10px;margin-top:8px;}
   .theme-row .btn{flex:1;}
+  .hidden{display:none !important;}
   .theme-row .btn.sel{background:linear-gradient(135deg,#00F0FF,#7C4DFF);color:#04121a;border-color:transparent;}
 
   /* ---------- Modals ---------- */
@@ -331,9 +332,29 @@
         <button class="btn ghost" data-theme="dark" id="themeDark">🌙 深色</button>
         <button class="btn ghost" data-theme="light" id="themeLight">☀️ 浅色</button>
       </div>
-      <h4>云同步</h4>
+      <h4>云同步方式</h4>
+      <div class="theme-row">
+        <button class="btn ghost" id="provMqtt">☁ MQTT</button>
+        <button class="btn ghost" id="provBaidu">📦 百度网盘</button>
+      </div>
       <div class="sync-info" id="syncInfo">登录账号后可通过云端同步数据。</div>
       <button class="btn ghost block" id="syncNow">立即同步</button>
+      <div id="baiduPanel" class="hidden">
+        <div class="sync-info">需先在 <a href="https://pan.baidu.com/union/developer" target="_blank" rel="noopener">百度网盘开放平台</a> 免费创建应用，拿到 App Key 与 Secret Key（权限勾选「个人云存储」）。</div>
+        <label>App Key</label>
+        <input id="baiduKey" type="text" placeholder="百度应用 App Key" autocomplete="off">
+        <label>Secret Key</label>
+        <input id="baiduSecret" type="password" placeholder="百度应用 Secret Key" autocomplete="off">
+        <button class="btn primary block" id="baiduBind">绑定百度网盘</button>
+        <div class="sync-info" id="baiduStatus"></div>
+        <div id="baiduCodeBox" class="hidden" style="margin-top:10px;padding:12px;border:1px dashed var(--accent);border-radius:12px;">
+          <div>请在手机/电脑浏览器打开：</div>
+          <div style="word-break:break-all;color:var(--accent);margin:4px 0;"><span id="baiduVerify"></span></div>
+          <div>输入授权码：<b id="baiduUserCode" style="font-size:20px;color:var(--lv);"></b></div>
+          <button class="btn ghost block" id="baiduDone" style="margin-top:10px;">我已授权</button>
+        </div>
+        <button class="btn ghost block" id="baiduUnbind" style="margin-top:10px;">解绑百度网盘</button>
+      </div>
       <h4>账号</h4>
       <button class="btn ghost block" id="settingsLogout">退出登录</button>
     </div>
@@ -372,8 +393,8 @@
   <div class="login hidden" id="loginScreen">
     <div class="login-card">
       <div class="login-logo"></div>
-      <h2>地球online</h2>
-      <p class="sub">个人经验工作台</p>
+      <h2>蛋丁</h2>
+      <p class="sub">经验追踪 · 你的成长记录</p>
       <input id="lgUser" type="text" placeholder="用户名" maxlength="20" autocomplete="username">
       <input id="lgPw" type="password" placeholder="密码" autocomplete="current-password">
       <div class="lg-err" id="lgErr"></div>
@@ -409,6 +430,8 @@
   // ============ constants ============
   const LS_ACCOUNTS="eow_accounts_v2";
   const LS_SESSION="eow_session_v2";
+  const LS_SESSION_PW="eow_session_pw_v2";
+  const LS_CLOUD_PROVIDER="eow_cloud_provider";
   const GUEST="__guest__";
   const WEEK=["周日","周一","周二","周三","周四","周五","周六"];
   const LEVELS=[
@@ -423,9 +446,10 @@
     {name:"红色等级",min:10000,color:"#F44336"}
   ];
   const CHIP_STEP=66;
-  const MQTT_BROKER="broker.hivemq.com";
-  const MQTT_PORT=8884;
-  const MQTT_PATH="/mqtt";
+  const MQTT_BROKERS=[
+    {host:"broker.emqx.io", port:8084, path:"/mqtt"},
+    {host:"broker.hivemq.com", port:8884, path:"/mqtt"}
+  ];
 
   // ============ storage helpers ============
   function readJSON(k,def){ try{ const r=localStorage.getItem(k); return r?JSON.parse(r):def; }catch(e){ return def; } }
@@ -469,32 +493,48 @@
   function isRegistered(u){ return u && u!==GUEST && accounts[u] && accounts[u].pw; }
   function defaultData(){ return {avatar:null,nickname:"玩家",totalExp:0,records:{},theme:"dark"}; }
 
-  // ============ MQTT sync engine ============
-  let mqttClient=null, mqttConnected=false;
+  // ============ cloud sync (provider: mqtt | baidu) ============
+  let cloudProvider = readJSON(LS_CLOUD_PROVIDER, "mqtt");
+  let baiduPollTimer=null;
+
+  // ---------- MQTT (robust: fallback brokers + hard timeout) ----------
+  let mqttClient=null, mqttConnected=false, mqttTrying=false, mqttFailed=false;
+  let mqttBrokerIdx=0, mqttRetryTimer=null;
   function mqttTopic(u){ return "eow/"+u.replace(/[^a-zA-Z0-9_-]/g,'_'); }
+  function cloudInit(){
+    if(!isRegistered(curUser)) return;
+    if(cloudProvider==="baidu"){ baiduInit(); }
+    else { initMQTT(curUser, sessionPassword); }
+  }
   function initMQTT(u,p){
-    sessionPassword=p;
-    if(mqttClient){ try{ mqttClient.disconnect(); }catch(e){} mqttClient=null; }
-    const clientId="eow_"+u.replace(/[^a-zA-Z0-9]/g,'_')+"_"+Math.random().toString(36).slice(2,8);
-    mqttClient=new Paho.MQTT.Client("wss://"+MQTT_BROKER+":"+MQTT_PORT+MQTT_PATH, clientId);
-    mqttClient.onConnectionLost=(resp)=>{ mqttConnected=false; updateSyncUI(); setTimeout(()=>connectMQTT(u,p), 3000); };
-    mqttClient.onMessageArrived=(msg)=>handleCloudMessage(msg.payloadString);
+    sessionPassword=p; mqttFailed=false; mqttBrokerIdx=0;
+    if(mqttRetryTimer){ clearTimeout(mqttRetryTimer); mqttRetryTimer=null; }
     connectMQTT(u,p);
   }
   function connectMQTT(u,p){
-    if(!navigator.onLine){ mqttConnected=false; updateSyncUI(); return; }
-    mqttClient.connect({ useSSL:true, reconnect:true, timeout:10,
-      onSuccess:()=>{ mqttConnected=true; updateSyncUI(); mqttClient.subscribe(mqttTopic(u)); publishSync(); },
-      onFailure:()=>{ mqttConnected=false; updateSyncUI(); setTimeout(()=>connectMQTT(u,p), 5000); }
-    });
+    if(!navigator.onLine){ mqttConnected=false; mqttTrying=false; updateSyncUI(); return; }
+    mqttTrying=true; updateSyncUI();
+    const b=MQTT_BROKERS[mqttBrokerIdx];
+    try{ if(mqttClient) mqttClient.disconnect(); }catch(e){}
+    const clientId="eow_"+u.replace(/[^a-zA-Z0-9]/g,'_')+"_"+Math.random().toString(36).slice(2,8);
+    mqttClient=new Paho.MQTT.Client("wss://"+b.host+":"+b.port+b.path, clientId);
+    mqttClient.onConnectionLost=()=>{ mqttConnected=false; mqttTrying=false; updateSyncUI(); mqttRetryTimer=setTimeout(()=>connectMQTT(u,p), 5000); };
+    mqttClient.onMessageArrived=(msg)=>handleCloudMessage(msg.payloadString);
+    let done=false;
+    const to=setTimeout(()=>{ if(done) return; done=true; mqttTrying=false; mqttBrokerIdx=(mqttBrokerIdx+1)%MQTT_BROKERS.length; mqttFailed=true; updateSyncUI(); mqttRetryTimer=setTimeout(()=>connectMQTT(u,p), 15000); }, 9000);
+    try{
+      mqttClient.connect({ useSSL:true, reconnect:false, timeout:9,
+        onSuccess:()=>{ if(done) return; done=true; clearTimeout(to); mqttConnected=true; mqttFailed=false; mqttTrying=false; updateSyncUI(); try{ mqttClient.subscribe(mqttTopic(u)); }catch(e){} publishSync(); },
+        onFailure:()=>{ if(done) return; done=true; clearTimeout(to); mqttTrying=false; mqttBrokerIdx=(mqttBrokerIdx+1)%MQTT_BROKERS.length; mqttFailed=true; updateSyncUI(); mqttRetryTimer=setTimeout(()=>connectMQTT(u,p), 15000); }
+      });
+    }catch(e){ if(!done){ done=true; clearTimeout(to); mqttBrokerIdx=(mqttBrokerIdx+1)%MQTT_BROKERS.length; mqttFailed=true; updateSyncUI(); mqttRetryTimer=setTimeout(()=>connectMQTT(u,p), 15000); } }
   }
   async function publishSync(){
+    if(cloudProvider==="baidu"){ return baiduSyncPush(); }
     if(!mqttClient || !mqttConnected || !isRegistered(curUser) || !sessionPassword) return;
     const payload=await encryptPayload({data:data,updatedAt:Date.now()}, curUser, sessionPassword);
-    const msg=new Paho.MQTT.Message(payload);
-    msg.destinationName=mqttTopic(curUser);
-    msg.qos=1; msg.retained=true;
-    mqttClient.send(msg);
+    const msg=new Paho.MQTT.Message(payload); msg.destinationName=mqttTopic(curUser); msg.qos=1; msg.retained=true;
+    try{ mqttClient.send(msg); }catch(e){}
   }
   async function handleCloudMessage(payload){
     if(!isRegistered(curUser) || !sessionPassword) return;
@@ -506,6 +546,101 @@
       data=dec.data; writeJSON(LS_ACCOUNTS,accounts);
       applyTheme(data.theme||"dark"); renderAll();
     }
+  }
+
+  // ---------- Baidu Netdisk (device-code OAuth + PCS) ----------
+  const BAIDU_PROXY="https://api.codetabs.com/v1/proxy/?quest=";
+  const BAIDU_DIR="/蛋丁";
+  const BAIDU_PATH="/蛋丁/data.json";
+  function baiduCfg(){ return (accounts[curUser]&&accounts[curUser].baidu)||{}; }
+  function baiduSave(cfg){ accounts[curUser]=accounts[curUser]||{}; accounts[curUser].baidu=cfg; writeJSON(LS_ACCOUNTS,accounts); }
+  function baiduTokenValid(){ const c=baiduCfg(); return !!(c.access && c.expAt && Date.now()<c.expAt); }
+  async function baiduProxy(method, url, body, headers){
+    const opt={method, headers:headers||{}};
+    if(body!==undefined) opt.body=body;
+    let r;
+    try{ r=await fetch(BAIDU_PROXY+encodeURIComponent(url), opt); }
+    catch(e){ return {error:String(e)}; }
+    const txt=await r.text();
+    let j=null; try{ j=JSON.parse(txt); }catch(e){}
+    return {status:r.status, text:txt, json:j};
+  }
+  async function baiduDeviceCode(){
+    const c=baiduCfg();
+    if(!c.appKey){ return {err:"请先填写 App Key"}; }
+    const url="https://openapi.baidu.com/oauth/2.0/device_code?client_id="+encodeURIComponent(c.appKey)+"&response_type=device_code&scope=basic%20netdisk";
+    const res=await baiduProxy("POST", url);
+    if(res.json && res.json.device_code){
+      c.deviceCode=res.json.device_code; c.userCode=res.json.user_code;
+      c.verifyUrl=res.json.verification_url||"https://openapi.baidu.com/device";
+      c.expiresAt=Date.now()+(res.json.expires_in||300)*1000;
+      baiduSave(c); return {ok:true};
+    }
+    return {err:(res.json&&res.json.error_description)||"获取授权码失败"};
+  }
+  async function baiduPollToken(){
+    const c=baiduCfg();
+    if(!c.deviceCode) return false;
+    const url="https://openapi.baidu.com/oauth/2.0/token?grant_type=device_token&code="+encodeURIComponent(c.deviceCode)+"&client_id="+encodeURIComponent(c.appKey)+"&client_secret="+encodeURIComponent(c.secret||"");
+    const res=await baiduProxy("POST", url);
+    if(res.json && res.json.access_token){
+      c.access=res.json.access_token; c.refresh=res.json.refresh_token;
+      c.expAt=Date.now()+(res.json.expires_in*1000)-60000; c.bound=true;
+      baiduSave(c); return true;
+    }
+    return false;
+  }
+  async function baiduRefresh(){
+    const c=baiduCfg();
+    if(!c.refresh) return false;
+    const url="https://openapi.baidu.com/oauth/2.0/token?grant_type=refresh_token&refresh_token="+encodeURIComponent(c.refresh)+"&client_id="+encodeURIComponent(c.appKey)+"&client_secret="+encodeURIComponent(c.secret||"");
+    const res=await baiduProxy("POST", url);
+    if(res.json && res.json.access_token){ c.access=res.json.access_token; c.expAt=Date.now()+(res.json.expires_in*1000)-60000; baiduSave(c); return true; }
+    return false;
+  }
+  async function baiduSyncPush(){
+    if(!isRegistered(curUser)) return;
+    let c=baiduCfg();
+    if(!c.bound) return;
+    if(!baiduTokenValid()){ if(!(await baiduRefresh())) return; c=baiduCfg(); }
+    const content=JSON.stringify({data:data, updatedAt:Date.now()});
+    const block=cyrb53(content);
+    const preUrl="https://pan.baidu.com/rest/2.0/xpan/file?method=precreate&access_token="+encodeURIComponent(c.access);
+    const preRes=await baiduProxy("POST", preUrl, "path="+encodeURIComponent(BAIDU_PATH)+"&size="+content.length+"&isdir=0&autoinit=1&block_list=%5B%22"+block+"%22%5D", {"Content-Type":"application/x-www-form-urlencoded"});
+    const uploadid=(preRes.json&&preRes.json.uploadid)||("u_"+Date.now());
+    const upUrl="https://pan.baidu.com/rest/2.0/xpan/file?method=upload&access_token="+encodeURIComponent(c.access)+"&type=tmpfile&path="+encodeURIComponent(BAIDU_PATH)+"&uploadid="+encodeURIComponent(uploadid)+"&partseq=0";
+    const fd=new FormData(); fd.append("file", new Blob([content], {type:"application/json"}), "data.json");
+    await baiduProxy("POST", upUrl, fd);
+    const creUrl="https://pan.baidu.com/rest/2.0/xpan/file?method=create&access_token="+encodeURIComponent(c.access);
+    const creRes=await baiduProxy("POST", creUrl, "path="+encodeURIComponent(BAIDU_PATH)+"&size="+content.length+"&isdir=0&uploadid="+encodeURIComponent(uploadid)+"&block_list=%5B%22"+block+"%22%5D&rtype=3", {"Content-Type":"application/x-www-form-urlencoded"});
+    return creRes;
+  }
+  async function baiduSyncPull(){
+    if(!isRegistered(curUser)) return false;
+    let c=baiduCfg();
+    if(!c.bound) return false;
+    if(!baiduTokenValid()){ if(!(await baiduRefresh())) return false; c=baiduCfg(); }
+    const listUrl="https://pan.baidu.com/rest/2.0/xpan/file?method=list&access_token="+encodeURIComponent(c.access)+"&dir="+encodeURIComponent(BAIDU_DIR);
+    const res=await baiduProxy("GET", listUrl);
+    if(res.json && res.json.list){
+      const f=res.json.list.find(x=>x.path===BAIDU_PATH || x.server_filename==="data.json");
+      if(f && f.dlink){
+        const dres=await baiduProxy("GET", f.dlink);
+        if(dres.text){ try{
+          const obj=JSON.parse(dres.text);
+          if(obj.updatedAt>(accounts[curUser].updatedAt||0)){
+            accounts[curUser].data=obj.data; accounts[curUser].updatedAt=obj.updatedAt;
+            data=obj.data; writeJSON(LS_ACCOUNTS,accounts);
+            applyTheme(data.theme||"dark"); renderAll(); return true;
+          }
+        }catch(e){} }
+      }
+    }
+    return false;
+  }
+  function baiduInit(){
+    if(!baiduTokenValid()){ updateSyncUI(); return; }
+    baiduSyncPull().then(()=>updateSyncUI());
   }
 
   // ============ persistence ============
@@ -582,17 +717,24 @@
   // ============ level styling ============
   function applyLevel(){
     const info=getLevelInfo(data.totalExp);
-    const c=info.cur.color;
+    let c=info.cur.color;
     const isLight=document.documentElement.dataset.theme==="light";
+    // 浅色模式下对低对比度等级色做可见性替换（白/黄在白底上看不清）
+    let fill=c, nick=c;
+    if(isLight){
+      const lo=c.toLowerCase();
+      if(lo==="#ffffff"){ fill="#0EA5E9"; nick="#0C4A6E"; }       // 白 -> 蓝
+      else if(lo==="#ffeb3b"){ fill="#CA8A04"; nick="#854D0E"; }  // 黄 -> 琥珀
+    }
     const glow=isLight ? "0 1px 2px rgba(0,0,0,.35)" : (c==="#212121"?"0 0 6px rgba(255,255,255,.4)":"0 0 10px "+c+"66");
-    topNick.style.color=c; topNick.style.textShadow=glow;
-    sbNick.style.color=c; sbNick.style.textShadow=glow;
-    sbLvName.textContent=info.cur.name; sbLvName.style.color=c; sbLvName.style.textShadow=isLight?"0 1px 2px rgba(0,0,0,.35)":"";
+    topNick.style.color=nick; topNick.style.textShadow=glow;
+    sbNick.style.color=nick; sbNick.style.textShadow=glow;
+    sbLvName.textContent=info.cur.name; sbLvName.style.color=nick; sbLvName.style.textShadow=isLight?"0 1px 2px rgba(0,0,0,.35)":"";
     sbLvText.textContent=info.isMax?(data.totalExp+" (已满级)"):(data.totalExp+" / "+info.levelExp);
     sbBarFill.style.width=(info.progress*100)+"%";
-    sbBarFill.style.background=c; sbBarFill.style.boxShadow="0 0 12px "+c;
+    sbBarFill.style.background=fill; sbBarFill.style.boxShadow="0 0 12px "+fill;
     sbTotal.textContent=data.totalExp;
-    document.documentElement.style.setProperty("--lv",c);
+    document.documentElement.style.setProperty("--lv",nick);
   }
 
   // ============ date bar ============
@@ -724,25 +866,88 @@
   }
 
   // ============ settings ============
-  function openSettings(){ updateSyncUI(); showModal(settingsModal); }
+  function openSettings(){
+    const c=baiduCfg();
+    $("baiduKey").value=c.appKey||""; $("baiduSecret").value=c.secret||"";
+    $("baiduStatus").textContent = c.bound ? ("已绑定账号，网盘路径："+BAIDU_PATH) : "";
+    $("baiduCodeBox").classList.add("hidden");
+    updateSyncUI(); showModal(settingsModal);
+  }
+  function setCloudProvider(p){
+    cloudProvider=p; writeJSON(LS_CLOUD_PROVIDER,p);
+    if(mqttRetryTimer){ clearTimeout(mqttRetryTimer); mqttRetryTimer=null; }
+    if(isRegistered(curUser)) cloudInit();
+    updateSyncUI(); updateNet();
+  }
+  async function baiduBindStart(){
+    const appKey=$("baiduKey").value.trim(), secret=$("baiduSecret").value.trim();
+    if(!appKey||!secret){ $("baiduStatus").textContent="请填写 App Key 和 Secret Key"; return; }
+    const c=baiduCfg(); c.appKey=appKey; c.secret=secret; c.bound=false; baiduSave(c);
+    $("baiduStatus").textContent="正在请求百度授权…";
+    const r=await baiduDeviceCode();
+    if(r.err){ $("baiduStatus").textContent=r.err; return; }
+    const cfg=baiduCfg();
+    $("baiduVerify").textContent=cfg.verifyUrl; $("baiduUserCode").textContent=cfg.userCode;
+    $("baiduCodeBox").classList.remove("hidden");
+    $("baiduStatus").textContent="请在浏览器完成授权，然后点「我已授权」。";
+    if(baiduPollTimer) clearInterval(baiduPollTimer);
+    baiduPollTimer=setInterval(async()=>{
+      const ok=await baiduPollToken();
+      if(ok){ clearInterval(baiduPollTimer); baiduPollTimer=null; $("baiduCodeBox").classList.add("hidden"); $("baiduStatus").textContent="绑定成功！正在同步…"; await baiduSyncPush(); updateSyncUI(); }
+    }, 3000);
+  }
+  async function baiduDone(){
+    const ok=await baiduPollToken();
+    if(ok){ if(baiduPollTimer){clearInterval(baiduPollTimer);baiduPollTimer=null;} $("baiduCodeBox").classList.add("hidden"); $("baiduStatus").textContent="绑定成功！正在同步…"; await baiduSyncPush(); updateSyncUI(); }
+    else{ $("baiduStatus").textContent="尚未授权，请先在浏览器完成授权。"; }
+  }
+  function baiduUnbind(){
+    const c=baiduCfg(); c.bound=false; c.access=null; c.refresh=null; baiduSave(c);
+    $("baiduStatus").textContent="已解绑。"; updateSyncUI();
+  }
+  $("provMqtt").addEventListener("click",()=>setCloudProvider("mqtt"));
+  $("provBaidu").addEventListener("click",()=>setCloudProvider("baidu"));
+  $("baiduBind").addEventListener("click",baiduBindStart);
+  $("baiduDone").addEventListener("click",baiduDone);
+  $("baiduUnbind").addEventListener("click",baiduUnbind);
   function updateSyncUI(){
     const on=navigator.onLine;
-    if(isRegistered(curUser)){
-      $("syncInfo").textContent=mqttConnected
-        ? "☁ 已连接云端（"+MQTT_BROKER+"）。数据改动会自动同步到登录同一账号的设备。"
-        : (on?"正在连接云端…":"⚠ 当前离线，改动已存本机，联网后自动同步。");
-      $("syncNow").style.display="block";
-    }else{
+    if(!isRegistered(curUser)){
       $("syncInfo").textContent="游客模式：数据仅存本机。注册并登录账号后即可启用跨设备云同步。";
       $("syncNow").style.display="none";
+      $("baiduPanel").classList.add("hidden");
+      return;
+    }
+    if(cloudProvider==="baidu"){
+      const c=baiduCfg();
+      $("provMqtt").classList.toggle("sel", false);
+      $("provBaidu").classList.toggle("sel", true);
+      $("syncInfo").textContent = c.bound ? "📦 已绑定百度网盘，改动会自动同步到你的网盘。" : "尚未绑定百度网盘，点击下方按钮绑定后启用同步。";
+      $("syncNow").style.display="block";
+      $("baiduPanel").classList.remove("hidden");
+      $("baiduBind").textContent = c.bound ? "已绑定 ✓（点此重绑）" : "绑定百度网盘";
+    }else{
+      $("provMqtt").classList.toggle("sel", true);
+      $("provBaidu").classList.toggle("sel", false);
+      $("syncInfo").textContent = mqttConnected ? "☁ 已连接云端（"+MQTT_BROKERS[mqttBrokerIdx].host+"），改动自动同步。"
+        : mqttFailed ? "⚠ 云端连接失败，已离线保存，将自动重试。"
+        : (on ? "正在连接云端…" : "⚠ 当前离线，改动已存本机，联网后自动同步。");
+      $("syncNow").style.display="block";
+      $("baiduPanel").classList.add("hidden");
     }
   }
-  $("syncNow").addEventListener("click",()=>{ if(isRegistered(curUser)) publishSync(); });
+  $("syncNow").addEventListener("click",()=>{
+    if(!isRegistered(curUser)) return;
+    if(cloudProvider==="baidu"){ baiduSyncPush().then(()=>baiduSyncPull()).then(updateSyncUI); }
+    else { publishSync(); }
+  });
   $("themeDark").addEventListener("click",()=>{ applyTheme("dark"); save(); });
   $("themeLight").addEventListener("click",()=>{ applyTheme("light"); save(); });
   $("settingsLogout").addEventListener("click",()=>{
-    try{ localStorage.setItem(LS_SESSION,""); }catch(e){}
+    try{ localStorage.setItem(LS_SESSION,""); localStorage.setItem(LS_SESSION_PW,""); }catch(e){}
+    if(mqttRetryTimer){ clearTimeout(mqttRetryTimer); mqttRetryTimer=null; }
     if(mqttClient){ try{ mqttClient.disconnect(); }catch(e){} mqttClient=null; mqttConnected=false; }
+    baiduPollTimer && clearInterval(baiduPollTimer);
     curUser=null; sessionPassword=null; hideModal(settingsModal); showLogin();
   });
 
@@ -781,7 +986,12 @@
     const on=navigator.onLine;
     netDot.classList.toggle("off",!on); netDot.title=on?"在线":"离线";
     if(isRegistered(curUser)){
-      acSync.textContent=mqttConnected?"☁ 已连接云端":(on?"正在连接云端…":"⚠ 离线 · 已本地保存");
+      if(cloudProvider==="baidu"){
+        const c=baiduCfg();
+        acSync.textContent = c.bound ? "📦 已绑定百度网盘" : (on?"未绑定百度网盘":"⚠ 离线 · 已本地保存");
+      }else{
+        acSync.textContent=mqttConnected?"☁ 已连接云端":(on?"正在连接云端…":"⚠ 离线 · 已本地保存");
+      }
     }else{ acSync.textContent="本地模式 · 数据仅存本机"; }
   }
   function updateAccountUI(){
@@ -794,11 +1004,12 @@
   function hideLogin(){ loginScreen.classList.add("hidden"); }
   async function doLogin(u, rawPass){
     curUser=u; try{ localStorage.setItem(LS_SESSION,u); }catch(e){}
+    if(isRegistered(curUser) && rawPass){ sessionPassword=rawPass; try{ localStorage.setItem(LS_SESSION_PW, rawPass); }catch(e){} }
     const acc=accounts[curUser]; data=(acc&&acc.data)?acc.data:defaultData();
     applyTheme(data.theme||"dark");
     if(!booted) initApp(); else renderAll();
     hideLogin();
-    if(isRegistered(curUser) && rawPass) initMQTT(curUser, rawPass);
+    if(isRegistered(curUser)) cloudInit();
     updateAccountUI();
   }
   $("lgLogin").addEventListener("click",()=>{
@@ -827,7 +1038,7 @@
     booted=true;
     topNick.textContent=data.nickname; sbNick.textContent=data.nickname;
     renderAll(); initDateBar();
-    window.addEventListener("online",()=>{ updateNet(); if(isRegistered(curUser) && sessionPassword) connectMQTT(curUser,sessionPassword); });
+    window.addEventListener("online",()=>{ updateNet(); if(isRegistered(curUser)) cloudInit(); });
     window.addEventListener("offline",()=>{ updateNet(); });
   }
 
@@ -835,8 +1046,11 @@
   (function boot(){
     const sess=localStorage.getItem(LS_SESSION);
     if(sess && accounts[sess]){
-      curUser=sess; const acc=accounts[curUser]; data=(acc&&acc.data)?acc.data:defaultData();
+      curUser=sess;
+      try{ sessionPassword=localStorage.getItem(LS_SESSION_PW)||null; }catch(e){}
+      const acc=accounts[curUser]; data=(acc&&acc.data)?acc.data:defaultData();
       applyTheme(data.theme||"dark"); initApp();
+      if(isRegistered(curUser)) cloudInit();
     }else{ showLogin(); }
   })();
 })();
