@@ -1,0 +1,6 @@
+.workbuddy/
+node_modules/
+*.venv
+android/.gradle/
+android/app/build/
+android/build/
