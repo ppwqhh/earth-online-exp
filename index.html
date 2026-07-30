@@ -106,6 +106,14 @@
   .fab:active{transform:translateX(-50%) scale(.93);}
   @keyframes pulse{0%,100%{box-shadow:0 0 16px rgba(0,240,255,.5);}50%{box-shadow:0 0 34px rgba(124,77,255,.85);}}
 
+  /* ---------- APK download pill ---------- */
+  .dl-pill{position:fixed;left:50%;bottom:calc(102px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:34;
+    display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:999px;text-decoration:none;
+    background:rgba(0,240,255,.14);border:1px solid rgba(0,240,255,.4);color:var(--text);font-size:14px;font-weight:600;
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 4px 18px rgba(0,240,255,.22);cursor:pointer;white-space:nowrap;}
+  .dl-pill:active{transform:translateX(-50%) scale(.96);}
+  .dl-pill .ic{font-size:16px;}
+
   /* ---------- Sidebar ---------- */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:38;opacity:0;pointer-events:none;transition:opacity .25s;}
   .overlay.show{opacity:1;pointer-events:auto;}
@@ -307,6 +315,9 @@
 
   <!-- FAB -->
   <button class="fab" id="fab">+</button>
+
+  <!-- APK download pill -->
+  <a class="dl-pill" id="dlPill" href="./earth-online.apk" download="earth-online.apk"><span class="ic">⬇</span> 下载安卓安装包</a>
 
   <!-- Sidebar -->
   <div class="overlay" id="overlay"></div>
