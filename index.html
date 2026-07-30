@@ -152,14 +152,15 @@
   .theme-row .btn.sel{background:linear-gradient(135deg,#00F0FF,#7C4DFF);color:#04121a;border-color:transparent;}
 
   /* ---------- Modals ---------- */
-  .modal{position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;}
+  .modal{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:18px;}
   .modal.show{display:flex;}
+  #delModal{z-index:60;}
   .modal-back{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);}
   .sheet{position:relative;width:100%;max-width:520px;background:linear-gradient(180deg, rgba(16,22,33,.98), rgba(11,14,20,.99));
-    border-top:1px solid var(--glass-border);border-radius:22px 22px 0 0;padding:22px 20px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.5);
-    animation:slideUp .3s cubic-bezier(.2,.8,.2,1);max-height:92vh;overflow-y:auto;transition:background .3s,border-color .3s;}
+    border:1px solid var(--glass-border);border-radius:22px;padding:22px 20px calc(24px + env(safe-area-inset-bottom));box-shadow:0 10px 50px rgba(0,0,0,.55);
+    animation:popIn .26s cubic-bezier(.2,.8,.2,1);max-height:92vh;overflow-y:auto;transition:background .3s,border-color .3s;}
   :root[data-theme="light"] .sheet{background:linear-gradient(180deg, rgba(255,255,255,.99), rgba(242,245,249,1));}
-  @keyframes slideUp{from{transform:translateY(100%);}to{transform:none;}}
+  @keyframes popIn{from{opacity:0;transform:scale(.95);}to{opacity:1;transform:none;}}
   .sheet h3{margin:0 0 16px;font-size:18px;}
   .sheet h4{margin:18px 0 10px;font-size:14px;color:var(--muted);font-weight:700;}
   .sheet label{display:block;font-size:13px;color:var(--muted);margin:14px 0 7px;}
@@ -226,6 +227,60 @@
   .lg-err{color:#FF5C7A;font-size:13px;min-height:18px;margin-bottom:6px;}
   :root[data-theme="light"] .lg-err{color:#D93025;}
   .login-card .btn{margin-top:8px;}
+  /* ===== 分类 / 任务 / 习惯 / 成就 / 图表 ===== */
+  .sb-actions .btn{display:flex;align-items:center;}
+  .sb-actions .btn .lbl{flex:1;text-align:left;}
+  .plus{margin-left:auto;font-size:20px;line-height:1;opacity:.85;font-weight:700;}
+  .cat-chip{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;color:#fff;margin-left:6px;vertical-align:middle;}
+  .day-sec{margin:14px 0 6px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+  .item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;margin-bottom:8px;}
+  .item.done{opacity:.5;}
+  .item.done .i-name{text-decoration:line-through;}
+  .item .chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--accent);flex:none;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:14px;cursor:pointer;}
+  .item.done .chk{background:var(--accent);color:#fff;}
+  .item .i-name{flex:1;font-weight:600;}
+  .item .i-exp{color:var(--exp-pos);font-weight:700;}
+  .item .i-meta{font-size:11px;color:var(--muted);}
+  .item .i-del{margin-left:4px;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;transition:.15s;}
+  .item .i-del:active{background:rgba(255,92,122,.28);transform:scale(.9);}
+  .row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--glass-border);}
+  .row .nm{flex:1;font-weight:600;}
+  .row .dot{width:14px;height:14px;border-radius:50%;flex:none;}
+  .row .meta{font-size:11px;color:var(--muted);}
+  .field{margin:9px 0;}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;}
+  .field input[type=date],.field input[type=number],.field input[type=text],.field select{width:100%;}
+  .two{display:flex;gap:8px;}
+  .two .field{flex:1;}
+  input[type=color]{width:46px;height:34px;border:none;background:none;padding:0;cursor:pointer;vertical-align:middle;}
+  .heat{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin-top:6px;}
+  .heat i{aspect-ratio:1;border-radius:2px;background:var(--glass-border);}
+  canvas.chart{width:100%;height:150px;display:block;margin-top:6px;}
+  .goal-row{display:flex;align-items:center;gap:8px;margin-top:4px;}
+  #snack{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--panel);color:var(--text);padding:10px 16px;border-radius:12px;box-shadow:var(--shadow);border:1px solid var(--glass-border);opacity:0;transition:.25s;z-index:99;pointer-events:none;font-size:14px;}
+  #snack.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
+  #snack button{margin-left:12px;background:none;border:none;color:var(--accent);font-weight:700;cursor:pointer;font-size:14px;}
+  .streak{font-size:12px;color:var(--muted);margin-top:6px;}
+  .streak b{color:var(--lv);}
+  .i-del,.ti-del{margin-left:4px;width:30px;height:30px;border-radius:9px;border:none;background:rgba(255,92,122,.12);color:#FF5C7A;font-size:15px;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center;transition:.15s;}
+  .i-del:active,.ti-del:active{background:rgba(255,92,122,.28);transform:scale(.9);}
+  .sb-acc{background:var(--glass);border:1px solid var(--glass-border);border-radius:14px;overflow:hidden;margin-bottom:10px;}
+  .sb-acc-head{width:100%;display:flex;align-items:center;gap:8px;background:none;border:none;color:var(--text);padding:13px 14px;cursor:pointer;font-size:15px;font-weight:700;}
+  .sb-acc-head .lbl{flex:1;text-align:left;}
+  .sb-acc-head .chev{transition:.2s;color:var(--muted);font-size:13px;}
+  .sb-acc.open .chev{transform:rotate(180deg);}
+  .sb-acc-body{display:none;padding:0 8px 6px;}
+  .sb-acc.open .sb-acc-body{display:block;}
+  .sb-acc-add{width:100%;background:none;border:none;border-top:1px solid var(--glass-border);color:var(--accent);font-weight:700;padding:11px;cursor:pointer;font-size:13px;}
+  .sb-task-item{display:flex;align-items:center;gap:8px;padding:11px 8px;border-bottom:1px solid var(--glass-border);}
+  .sb-task-item:last-child{border-bottom:none;}
+  .sb-task-item .ti-main{flex:1;min-width:0;cursor:pointer;}
+  .sb-task-item .ti-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sb-task-item .ti-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+  .sb-drawer-empty{font-size:12px;color:var(--muted);padding:12px 8px;text-align:center;line-height:1.6;}
+  .cat-palette{display:flex;gap:10px;margin:10px 0 4px;flex-wrap:wrap;}
+  .cat-swatch{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:.15s;box-shadow:0 0 0 1px rgba(128,128,128,.25);}
+  .cat-swatch.sel{border-color:var(--text);transform:scale(1.12);box-shadow:0 0 0 2px var(--bg),0 0 12px currentColor;}
 </style>
 </head>
 <body>
@@ -271,9 +326,21 @@
       <div class="ac-sync" id="acSync">本地模式 · 数据仅存本机</div>
     </div>
     <div class="sb-actions">
+      <button class="btn ghost block" id="catBtn"><span class="lbl">🏷 分类</span><span class="plus" id="catAdd">＋</span></button>
+      <div class="sb-acc" id="taskAcc">
+        <button class="sb-acc-head" id="taskToggle"><span class="lbl">✅ 每日任务</span><span class="chev">▾</span></button>
+        <div class="sb-acc-body" id="taskDrawer"></div>
+        <button class="sb-acc-add" id="taskAdd">＋ 新建每日任务</button>
+      </div>
+      <div class="sb-acc" id="habitAcc">
+        <button class="sb-acc-head" id="habitToggle"><span class="lbl">🔁 习惯</span><span class="chev">▾</span></button>
+        <div class="sb-acc-body" id="habitDrawer"></div>
+        <button class="sb-acc-add" id="habitAdd">＋ 新建习惯</button>
+      </div>
       <button class="btn primary block" id="statBtn">📊 统计</button>
       <button class="btn ghost block" id="settingsBtn">⚙️ 设置</button>
     </div>
+    <div class="streak" id="streakLine"></div>
   </aside>
 
   <!-- Add modal -->
@@ -285,6 +352,8 @@
       <input id="evtName" type="text" placeholder="如：晨跑" maxlength="20">
       <label>经验值（最低 0）</label>
       <input id="evtExp" type="number" min="0" placeholder="如：50" inputmode="numeric">
+      <label>分类（可选）</label>
+      <select id="evtCat"><option value="">无分类</option></select>
       <div class="btn-row">
         <button class="btn ghost" id="addCancel">取消</button>
         <button class="btn primary" id="addSave">记录</button>
@@ -311,11 +380,18 @@
         </div>
         <div class="pp-months" id="ppMonths"></div>
       </div>
+      <div class="field"><label>按分类筛选</label><select id="statsCat"><option value="">全部分类</option></select></div>
       <div class="stats-summary">
         <div class="card"><div class="v" id="sumExp">0</div><div class="k">本月总经验</div></div>
         <div class="card"><div class="v" id="sumCnt">0</div><div class="k">记录条数</div></div>
       </div>
       <div class="stats-list" id="statsList"></div>
+      <h4 style="margin-top:14px">月度趋势</h4>
+      <canvas class="chart" id="trendChart"></canvas>
+      <h4 style="margin-top:10px">分类占比</h4>
+      <canvas class="chart" id="catChart"></canvas>
+      <div class="field" style="margin-top:10px"><label style="margin:0;display:flex;align-items:center;justify-content:space-between;cursor:pointer;">显示年度热力图 <input type="checkbox" id="heatToggle" style="width:auto"></label></div>
+      <div class="heat hidden" id="heatMap"></div>
     </div>
   </div>
 
@@ -355,6 +431,10 @@
         </div>
         <button class="btn ghost block" id="baiduUnbind" style="margin-top:10px;">解绑百度网盘</button>
       </div>
+      <h4>数据备份</h4>
+      <button class="btn ghost block" id="exportBtn">⬇️ 导出备份 JSON</button>
+      <button class="btn ghost block" id="importBtn">⬆️ 导入备份 JSON</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none">
       <h4>账号</h4>
       <button class="btn ghost block" id="settingsLogout">退出登录</button>
     </div>
@@ -378,7 +458,7 @@
 
   <!-- Delete confirm modal -->
   <div class="modal" id="delModal">
-    <div class="modal-back" data-close></div>
+    <div class="modal-back" id="delBack"></div>
     <div class="sheet">
       <h3>删除这条记录？</h3>
       <p id="delInfo"></p>
@@ -390,6 +470,63 @@
   </div>
 
   <!-- Login -->
+  <!-- Category modal -->
+  <div class="modal" id="catModal">
+    <div class="modal-back" data-close></div>
+    <div class="sheet">
+      <div class="modal-head"><h3>🏷 分类管理</h3><button class="x" id="catClose">✕</button></div>
+      <div class="row"><input id="catName" type="text" placeholder="分类名称" maxlength="10"><button class="btn primary" id="catSave">添加</button></div>
+      <div class="cat-palette" id="catPalette"></div>
+      <div id="catList"></div>
+    </div>
+  </div>
+
+  <!-- Task editor modal -->
+  <div class="modal" id="taskEditorModal">
+    <div class="modal-back" data-close></div>
+    <div class="sheet">
+      <h3>每日任务</h3>
+      <div class="field"><label>任务名称</label><input id="taskName" type="text" placeholder="如：背单词" maxlength="20"></div>
+      <div class="field"><label>完成获得经验</label><input id="taskExp" type="number" min="0" placeholder="如：30"></div>
+      <div class="two">
+        <div class="field"><label>开始日期</label><input id="taskStart" type="date"></div>
+        <div class="field"><label>结束日期</label><input id="taskEnd" type="date"></div>
+      </div>
+      <div class="btn-row"><button class="btn ghost" id="taskEditorCancel">取消</button><button class="btn primary" id="taskEditorSave">保存</button></div>
+    </div>
+  </div>
+
+  <!-- Habit editor modal -->
+  <div class="modal" id="habitEditorModal">
+    <div class="modal-back" data-close></div>
+    <div class="sheet">
+      <h3>习惯</h3>
+      <div class="field"><label>习惯名称</label><input id="habitName" type="text" placeholder="如：早睡早起" maxlength="20"></div>
+      <div class="field"><label>每天完成获得经验</label><input id="habitExp" type="number" min="0" placeholder="如：10"></div>
+      <div class="field"><label>惩罚：连续多少天未完成则扣经验</label><input id="habitPen" type="number" min="1" placeholder="如：5"></div>
+      <div class="field"><label>惩罚扣除经验</label><input id="habitPenExp" type="number" min="0" placeholder="如：50"></div>
+      <div class="two">
+        <div class="field"><label>开始日期</label><input id="habitStart" type="date"></div>
+        <div class="field"><label>结束日期</label><input id="habitEnd" type="date"></div>
+      </div>
+      <div class="btn-row"><button class="btn ghost" id="habitEditorCancel">取消</button><button class="btn primary" id="habitEditorSave">保存</button></div>
+    </div>
+  </div>
+
+  <!-- Edit record modal -->
+  <div class="modal" id="editModal">
+    <div class="modal-back" data-close></div>
+    <div class="sheet">
+      <h3>编辑记录</h3>
+      <div class="field"><label>事件名称</label><input id="editName" type="text" maxlength="20"></div>
+      <div class="field"><label>经验值</label><input id="editExp" type="number" min="0"></div>
+      <div class="field"><label>分类</label><select id="editCat"><option value="">无分类</option></select></div>
+      <div class="btn-row"><button class="btn ghost" id="editCancel">取消</button><button class="btn primary" id="editSave">保存</button></div>
+    </div>
+  </div>
+
+  <div id="snack"></div>
+
   <div class="login hidden" id="loginScreen">
     <div class="login-card">
       <div class="login-logo"></div>
@@ -432,6 +569,7 @@
   const LS_SESSION="eow_session_v2";
   const LS_SESSION_PW="eow_session_pw_v2";
   const LS_CLOUD_PROVIDER="eow_cloud_provider";
+  const LS_DEVICE_KEY="eow_device_key_v1";
   const GUEST="__guest__";
   const WEEK=["周日","周一","周二","周三","周四","周五","周六"];
   const LEVELS=[
@@ -483,15 +621,78 @@
     }catch(e){ return null; }
   }
 
+  // ============ password & session security ============
+  const HAS_SUBTLE = !!(window.crypto && window.crypto.subtle);
+  // 账号密码校验哈希：安全上下文用 PBKDF2+随机盐（慢哈希，抗暴力破解）；
+  // 非安全上下文（如本地 file:// 的 APK）降级为 cyrb53，保证仍可登录。
+  async function pwHash(p){
+    if(!HAS_SUBTLE) return cyrb53(p);
+    const salt=crypto.getRandomValues(new Uint8Array(16));
+    const base=await crypto.subtle.importKey("raw", new TextEncoder().encode(p), {name:"PBKDF2"}, false, ["deriveBits"]);
+    const bits=await crypto.subtle.deriveBits({name:"PBKDF2", salt, iterations:150000, hash:"SHA-256"}, base, 256);
+    return {salt: ab2b64(salt.buffer), hash: ab2b64(bits)};
+  }
+  async function pwVerify(p, stored){
+    if(!stored) return false;
+    if(typeof stored==="string") return stored===cyrb53(p);
+    if(!HAS_SUBTLE) return stored===cyrb53(p);
+    const salt=b642ab(stored.salt);
+    const base=await crypto.subtle.importKey("raw", new TextEncoder().encode(p), {name:"PBKDF2"}, false, ["deriveBits"]);
+    const bits=await crypto.subtle.deriveBits({name:"PBKDF2", salt, iterations:150000, hash:"SHA-256"}, base, 256);
+    return ab2b64(bits)===stored.hash;
+  }
+  // 会话密码本地加密存储（避免明文落盘；用每机随机设备密钥封装）。
+  // 非安全上下文下降级为明文（与原行为一致），仅用于保证 APK 可登录。
+  function getDeviceKey(){
+    let k=localStorage.getItem(LS_DEVICE_KEY);
+    if(!k){ const b=new Uint8Array(32); crypto.getRandomValues(b); k=btoa(String.fromCharCode.apply(null, Array.from(b))); localStorage.setItem(LS_DEVICE_KEY,k); }
+    return crypto.subtle.importKey("raw", b642ab(k), {name:"AES-GCM"}, false, ["encrypt","decrypt"]);
+  }
+  async function encSession(pw){
+    if(!pw) return "";
+    if(!HAS_SUBTLE) return pw;
+    const key=await getDeviceKey();
+    const iv=crypto.getRandomValues(new Uint8Array(12));
+    const ct=await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, new TextEncoder().encode(pw));
+    return ab2b64(iv)+":"+ab2b64(ct);
+  }
+  async function decSession(blob){
+    if(!blob) return null;
+    if(!HAS_SUBTLE) return blob;
+    try{ const p=blob.split(":"); if(p.length!==2) return null;
+      const key=await getDeviceKey();
+      const pt=await crypto.subtle.decrypt({name:"AES-GCM", iv:b642ab(p[0])}, key, b642ab(p[1]));
+      return new TextDecoder().decode(pt);
+    }catch(e){ return null; }
+  }
+  // 云同步按实体 id 合并（而非整体覆盖），避免多端互相丢失数据
+  function mergeData(local, remote){
+    const out=JSON.parse(JSON.stringify(local||defaultData()));
+    const r=remote||{};
+    out.records=out.records||{};
+    const rm=r.records||{};
+    for(const k in rm){ const byId={}; (out.records[k]||[]).forEach(x=>byId[x.id]=x); (rm[k]||[]).forEach(x=>{ if(!byId[x.id]) byId[x.id]=x; }); out.records[k]=Object.values(byId).sort((a,b)=>b.ts-a.ts); }
+    function mergeDone(a,b){ const o={}; const ks=new Set([...Object.keys(a||{}), ...Object.keys(b||{})]); ks.forEach(ky=>{ o[ky]=(a&&a[ky])||(b&&b[ky]); }); return o; }
+    const catMap={}; (out.cats||[]).forEach(c=>catMap[c.id]=c); (r.cats||[]).forEach(c=>catMap[c.id]=c); out.cats=Object.values(catMap);
+    const tMap={}; (out.tasks||[]).forEach(t=>tMap[t.id]=t);
+    (r.tasks||[]).forEach(rt=>{ const lt=tMap[rt.id]; if(lt){ tMap[rt.id]={...lt, ...rt, done:mergeDone(lt.done, rt.done)}; } else tMap[rt.id]=rt; });
+    out.tasks=Object.values(tMap);
+    const hMap={}; (out.habits||[]).forEach(h=>hMap[h.id]=h);
+    (r.habits||[]).forEach(rh=>{ const lh=hMap[rh.id]; if(lh){ hMap[rh.id]={...lh, ...rh, done:mergeDone(lh.done, rh.done), penalizedFor:(lh.penalizedFor||rh.penalizedFor)}; } else hMap[rh.id]=rh; });
+    out.habits=Object.values(hMap);
+    ["nickname","goal","badges","theme","avatar"].forEach(f=>{ if(r[f]!==undefined) out[f]=r[f]; });
+    return out;
+  }
+
   // ============ account state ============
   let accounts=readJSON(LS_ACCOUNTS,{});
   let curUser=null;
-  let data={avatar:null,nickname:"玩家",totalExp:0,records:{},theme:"dark"};
+  let data={avatar:null,nickname:"玩家",totalExp:0,records:{},cats:[],tasks:[],habits:[],goal:0,badges:{},theme:"dark"};
   let booted=false;
   let sessionPassword=null;
 
   function isRegistered(u){ return u && u!==GUEST && accounts[u] && accounts[u].pw; }
-  function defaultData(){ return {avatar:null,nickname:"玩家",totalExp:0,records:{},theme:"dark"}; }
+  function defaultData(){ return {avatar:null,nickname:"玩家",totalExp:0,records:{},cats:[],tasks:[],habits:[],goal:0,badges:{},theme:"dark"}; }
 
   // ============ cloud sync (provider: mqtt | baidu) ============
   let cloudProvider = readJSON(LS_CLOUD_PROVIDER, "mqtt");
@@ -542,8 +743,9 @@
     if(!dec || !dec.data || !dec.updatedAt) return;
     const localUpd=(accounts[curUser]&&accounts[curUser].updatedAt)||0;
     if(dec.updatedAt>localUpd){
-      accounts[curUser].data=dec.data; accounts[curUser].updatedAt=dec.updatedAt;
-      data=dec.data; writeJSON(LS_ACCOUNTS,accounts);
+      data=mergeData(data, dec.data); recomputeTotal();
+      accounts[curUser].data=data; accounts[curUser].updatedAt=Date.now();
+      writeJSON(LS_ACCOUNTS,accounts);
       applyTheme(data.theme||"dark"); renderAll();
     }
   }
@@ -629,8 +831,9 @@
         if(dres.text){ try{
           const obj=JSON.parse(dres.text);
           if(obj.updatedAt>(accounts[curUser].updatedAt||0)){
-            accounts[curUser].data=obj.data; accounts[curUser].updatedAt=obj.updatedAt;
-            data=obj.data; writeJSON(LS_ACCOUNTS,accounts);
+            data=mergeData(data, obj.data); recomputeTotal();
+            accounts[curUser].data=data; accounts[curUser].updatedAt=Date.now();
+            writeJSON(LS_ACCOUNTS,accounts);
             applyTheme(data.theme||"dark"); renderAll(); return true;
           }
         }catch(e){} }
@@ -672,9 +875,19 @@
     const t=Math.max(0,total); let idx=0;
     for(let i=0;i<LEVELS.length;i++){ if(t>=LEVELS[i].min) idx=i; }
     const cur=LEVELS[idx], next=LEVELS[idx+1]||null;
-    const levelExp=next?next.min:t;
-    const progress=next?Math.min(1,t/levelExp):1;
-    return {cur,next,levelExp,progress,isMax:!next};
+    const into=t-cur.min;
+    const gap=next?(next.min-cur.min):1;
+    const progress=next?Math.min(1,into/gap):1;
+    return {cur,next,into,gap,levelExp:next?gap:0,progress,isMax:!next};
+  }
+  function setExp(d){ data.totalExp=Math.max(0,data.totalExp+d); applyLevel(); }
+  // 从记录/任务/习惯完成状态重新计算总经验（用于云同步合并后保持一致；惩罚已记为负经验记录）
+  function recomputeTotal(){
+    let s=0;
+    for(const k in (data.records||{})) (data.records[k]||[]).forEach(r=> s+=r.exp);
+    (data.tasks||[]).forEach(t=>{ if(t.done) for(const d in t.done) if(t.done[d]) s+=t.exp; });
+    (data.habits||[]).forEach(h=>{ if(h.done) for(const d in h.done) if(h.done[d]) s+=h.exp; });
+    data.totalExp=Math.max(0, Math.round(s)); applyLevel();
   }
   function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -706,9 +919,21 @@
   avatarInput.addEventListener("change",e=>{
     const file=e.target.files&&e.target.files[0]; if(!file) return;
     const reader=new FileReader();
-    reader.onload=()=>{ data.avatar=reader.result; save(); renderAvatar(); applyLevel(); };
+    reader.onload=()=>{ compressAvatar(reader.result, url=>{ data.avatar=url; save(); renderAvatar(); applyLevel(); }); };
     reader.readAsDataURL(file); avatarInput.value="";
   });
+  function compressAvatar(dataUrl, cb){
+    const img=new Image();
+    img.onload=()=>{
+      const max=256; const scale=Math.min(1, max/Math.max(img.width,img.height));
+      const cw=Math.round(img.width*scale), ch=Math.round(img.height*scale);
+      const c=document.createElement("canvas"); c.width=cw; c.height=ch;
+      c.getContext("2d").drawImage(img,0,0,cw,ch);
+      try{ cb(c.toDataURL("image/jpeg",0.8)); }catch(e){ cb(dataUrl); }
+    };
+    img.onerror=()=>cb(dataUrl);
+    img.src=dataUrl;
+  }
 
   // ============ nickname ============
   topNick.addEventListener("input",()=>{ data.nickname=topNick.textContent.trim()||"玩家"; sbNick.textContent=data.nickname; save(); });
@@ -730,7 +955,7 @@
     topNick.style.color=nick; topNick.style.textShadow=glow;
     sbNick.style.color=nick; sbNick.style.textShadow=glow;
     sbLvName.textContent=info.cur.name; sbLvName.style.color=nick; sbLvName.style.textShadow=isLight?"0 1px 2px rgba(0,0,0,.35)":"";
-    sbLvText.textContent=info.isMax?(data.totalExp+" (已满级)"):(data.totalExp+" / "+info.levelExp);
+    sbLvText.textContent=info.isMax?(data.totalExp+" (已满级)"):(info.into+" / "+info.gap+"（距下一级）");
     sbBarFill.style.width=(info.progress*100)+"%";
     sbBarFill.style.background=fill; sbBarFill.style.boxShadow="0 0 12px "+fill;
     sbTotal.textContent=data.totalExp;
@@ -743,7 +968,7 @@
     const key=fmtKey(d);
     const chip=document.createElement("div"); chip.className="chip"; chip.dataset.key=key;
     if(key===selectedKey) chip.classList.add("active");
-    if(dayTotal(key)>0) chip.classList.add("has");
+    if(dayTotalAll(key)>0) chip.classList.add("has");
     chip.innerHTML='<div class="d">'+pad(d.getMonth()+1)+"/"+pad(d.getDate())+'</div>'+
                    '<div class="w">'+WEEK[d.getDay()].slice(1)+'</div><div class="dot"></div>';
     chip.addEventListener("click",()=>selectDate(key));
@@ -760,7 +985,7 @@
     dateBar.querySelectorAll(".chip").forEach(ch=>{
       const k=ch.dataset.key;
       ch.classList.toggle("active",k===selectedKey);
-      ch.classList.toggle("has",dayTotal(k)>0);
+      ch.classList.toggle("has",dayTotalAll(k)>0);
     });
   }
   dateBar.addEventListener("scroll",()=>{
@@ -780,67 +1005,103 @@
   function fmtTime(ts){ const d=new Date(ts); return pad(d.getMonth()+1)+"/"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes()); }
   function renderRecords(){
     const list=(data.records[selectedKey]||[]).slice().sort((a,b)=>b.ts-a.ts);
+    const tasksForDay=(data.tasks||[]).filter(t=>inRange(selectedKey,t.start,t.end));
+    const habitsForDay=(data.habits||[]).filter(h=>inRange(selectedKey,h.start,h.end));
     recordsEl.innerHTML="";
-    if(list.length===0){
-      const e=document.createElement("div"); e.className="empty";
-      e.innerHTML='<span class="em">🌱</span>今天还没有记录，<br>去加点经验吧~';
-      recordsEl.appendChild(e); return;
+    if(tasksForDay.length){ const s=document.createElement("div"); s.className="day-sec"; s.textContent="✅ 每日任务"; recordsEl.appendChild(s);
+      tasksForDay.forEach(t=>recordsEl.appendChild(taskEl(t))); }
+    if(habitsForDay.length){ const s=document.createElement("div"); s.className="day-sec"; s.textContent="🔁 习惯"; recordsEl.appendChild(s);
+      habitsForDay.forEach(h=>recordsEl.appendChild(habitEl(h))); }
+    if(list.length){ const s=document.createElement("div"); s.className="day-sec"; s.textContent="📝 经验记录"; recordsEl.appendChild(s);
+      list.forEach(rec=>{
+        const el=document.createElement("div"); el.className="rec";
+        const pos=rec.exp>=0;
+        const cat=data.cats.find(c=>c.id===rec.cat);
+        const catHtml=cat?('<span class="cat-chip" style="background:'+cat.color+'">'+escapeHtml(cat.name)+'</span>'):"";
+        el.innerHTML='<div><div class="name">'+escapeHtml(rec.name)+catHtml+'</div><div class="time">'+fmtTime(rec.ts)+'</div></div>'+
+                     '<div class="exp '+(pos?"pos":"neg")+'">'+(pos?"+":"")+rec.exp+'</div>';
+        el.addEventListener("click",()=>openEdit(rec));
+        bindLongPress(el,{type:"rec",rec});
+        recordsEl.appendChild(el);
+      });
     }
-    list.forEach(rec=>{
-      const el=document.createElement("div"); el.className="rec";
-      const pos=rec.exp>=0;
-      el.innerHTML='<div><div class="name">'+escapeHtml(rec.name)+'</div><div class="time">'+fmtTime(rec.ts)+'</div></div>'+
-                   '<div class="exp '+(pos?"pos":"neg")+'">'+(pos?"+":"")+rec.exp+'</div>';
-      bindLongPress(el,rec); recordsEl.appendChild(el);
-    });
+    if(!tasksForDay.length && !habitsForDay.length && !list.length){
+      const e=document.createElement("div"); e.className="empty";
+      e.innerHTML='<span class="em">🌱</span>今天还没有记录，<br>去加点经验吧~'; recordsEl.appendChild(e);
+    }
   }
 
-  // ============ long press delete ============
+  // ============ delete (records / tasks / habits) ============
   let lpTimer=null,pendingDelete=null;
-  function bindLongPress(el,rec){
-    el.addEventListener("pointerdown",()=>{ lpTimer=setTimeout(()=>{ lpTimer=null; openDelete(rec); },550); });
+  function bindLongPress(el,target){
+    el.addEventListener("pointerdown",()=>{ lpTimer=setTimeout(()=>{ lpTimer=null;
+      if(target.type==="rec") openDelete(target.rec);
+      else if(target.type==="task") openDeleteTask(target.task);
+      else if(target.type==="habit") openDeleteHabit(target.habit); },550); });
     const cancel=()=>{ if(lpTimer){clearTimeout(lpTimer); lpTimer=null;} };
     el.addEventListener("pointerup",cancel); el.addEventListener("pointerleave",cancel); el.addEventListener("pointercancel",cancel);
   }
-  function openDelete(rec){
-    pendingDelete=rec;
-    $("delInfo").innerHTML="事件：<b>"+escapeHtml(rec.name)+"</b><br>经验值："+(rec.exp>=0?"+":"")+rec.exp+"<br><br>删除后将从当日与总计中扣除对应经验。";
-    showModal(delModal); if(navigator.vibrate) navigator.vibrate(30);
+  function openConfirm(infoHtml,target){
+    pendingDelete=target; $("delInfo").innerHTML=infoHtml; showModal(delModal); if(navigator.vibrate) navigator.vibrate(30);
   }
+  function openDelete(rec){ openConfirm("事件：<b>"+escapeHtml(rec.name)+"</b><br>经验值："+(rec.exp>=0?"+":"")+rec.exp+"<br><br>删除后将从当日与总计中扣除对应经验。", {type:"rec",rec}); }
+  function openDeleteTask(t){ openConfirm("每日任务：<b>"+escapeHtml(t.name)+"</b><br>删除后该任务在所有日期消失。", {type:"task",task:t}); }
+  function openDeleteHabit(h){ openConfirm("习惯：<b>"+escapeHtml(h.name)+"</b><br>删除后该习惯在所有日期消失。", {type:"habit",habit:h}); }
+  let lastDeleted=null;
   $("delConfirm").addEventListener("click",()=>{
     if(!pendingDelete) return;
-    const list=data.records[selectedKey];
-    if(list){ const i=list.findIndex(r=>r.id===pendingDelete.id);
-      if(i>=0){ data.totalExp=Math.max(0,data.totalExp-list[i].exp); list.splice(i,1); if(list.length===0) delete data.records[selectedKey]; } }
-    pendingDelete=null; save(); hideModal(delModal); renderRecords(); applyLevel(); updateChipStates();
+    const t=pendingDelete;
+    if(t.type==="rec"){ const list=data.records[selectedKey];
+      if(list){ const i=list.findIndex(r=>r.id===t.rec.id);
+        if(i>=0){ const rec=list[i]; setExp(-rec.exp); list.splice(i,1); if(list.length===0) delete data.records[selectedKey];
+          lastDeleted={key:selectedKey,rec}; } } }
+    else if(t.type==="task"){ const i=(data.tasks||[]).findIndex(x=>x.id===t.task.id); if(i>=0) data.tasks.splice(i,1); renderTaskDrawer(); }
+    else if(t.type==="habit"){ const i=(data.habits||[]).findIndex(x=>x.id===t.habit.id); if(i>=0) data.habits.splice(i,1); renderHabitDrawer(); }
+    pendingDelete=null; save(); hideModal(delModal); renderRecords(); updateChipStates();
+    if(t.type==="rec" && lastDeleted) showSnack("已删除「"+lastDeleted.rec.name+"」", undoDelete);
+    else if(t.type!=="rec") showSnack("已删除");
   });
+  function undoDelete(){ if(!lastDeleted) return; const {key,rec}=lastDeleted;
+    if(!data.records[key]) data.records[key]=[]; data.records[key].unshift(rec);
+    setExp(rec.exp); lastDeleted=null; save(); renderRecords(); updateChipStates(); hideSnack(); }
 
   // ============ add record ============
-  function openAdd(){ $("evtName").value=""; $("evtExp").value=""; showModal(addModal); setTimeout(()=>$("evtName").focus(),250); }
+  function openAdd(){ $("evtName").value=""; $("evtExp").value=""; fillCatSelect($("evtCat"),""); showModal(addModal); setTimeout(()=>$("evtName").focus(),250); }
   $("addSave").addEventListener("click",()=>{
     const name=($("evtName").value.trim())||"未命名";
     let exp=parseInt($("evtExp").value,10); if(isNaN(exp)) exp=0; if(exp<0) exp=0;
+    const cat=$("evtCat").value||"";
     if(!data.records[selectedKey]) data.records[selectedKey]=[];
-    data.records[selectedKey].push({id:uid(),name,exp,ts:Date.now()});
-    data.totalExp+=exp; save(); hideModal(addModal);
-    renderRecords(); applyLevel(); updateChipStates();
+    data.records[selectedKey].push({id:uid(),name,exp,cat,ts:Date.now()});
+    setExp(exp); save(); hideModal(addModal);
+    renderRecords(); updateChipStates();
     content.scrollTo({top:0,behavior:"smooth"});
   });
 
   // ============ statistics ============
   let statsYear=new Date().getFullYear(), statsMonth=new Date().getMonth()+1;
-  function openStats(){ statsYear=selectedDate.getFullYear(); statsMonth=selectedDate.getMonth()+1; $("periodPicker").classList.add("hidden"); renderStats(); showModal(statsModal); }
+  function openStats(){ statsYear=selectedDate.getFullYear(); statsMonth=selectedDate.getMonth()+1; fillCatSelect($("statsCat"),"","全部分类"); $("statsCat").value=""; $("periodPicker").classList.add("hidden"); if($("heatToggle")){ $("heatToggle").checked=showHeat; } showModal(statsModal); renderStats(); }
+  function monthEvents(catFilter){
+    const evs=[];
+    for(const key in data.records){ const p=key.split("-"); if(+p[0]===statsYear && +p[1]===statsMonth){
+      data.records[key].forEach(r=>{ if(!catFilter || r.cat===catFilter) evs.push({key,r}); }); } }
+    if(!catFilter){
+      (data.tasks||[]).forEach(t=>{ for(const dk in (t.done||{})){ if(t.done[dk] && inMonth(dk,statsYear,statsMonth)) evs.push({key:dk, r:{name:t.name+" ✅", exp:t.exp, ts:parseKey(dk).getTime()+1, cat:"", task:true}}); } });
+      (data.habits||[]).forEach(h=>{ for(const dk in (h.done||{})){ if(h.done[dk] && inMonth(dk,statsYear,statsMonth)) evs.push({key:dk, r:{name:h.name+" 🔁", exp:h.exp, ts:parseKey(dk).getTime()+2, cat:"", habit:true}}); } });
+    }
+    return evs;
+  }
   function renderStats(){
     $("periodLabel").textContent=statsYear+"年"+statsMonth+"月";
-    const inMonth=[];
-    for(const key in data.records){ const p=key.split("-"); if(+p[0]===statsYear && +p[1]===statsMonth) data.records[key].forEach(r=>inMonth.push({key,r})); }
-    const total=inMonth.reduce((s,x)=>s+x.r.exp,0);
-    $("sumExp").textContent=total; $("sumCnt").textContent=inMonth.length;
-    const groups={}; inMonth.forEach(x=>{ (groups[x.key]=groups[x.key]||[]).push(x.r); });
+    const catFilter=$("statsCat").value||"";
+    const evs=monthEvents(catFilter);
+    const total=evs.reduce((s,x)=>s+x.r.exp,0);
+    $("sumExp").textContent=total; $("sumCnt").textContent=evs.length;
+    const groups={}; evs.forEach(x=>{ (groups[x.key]=groups[x.key]||[]).push(x.r); });
     const keys=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
     const box=$("statsList"); box.innerHTML="";
-    if(keys.length===0){ box.innerHTML='<div class="s-empty">本月还没有经验记录<br>去加点经验吧~</div>'; return; }
-    keys.forEach(k=>{
+    if(keys.length===0){ box.innerHTML='<div class="s-empty">本月还没有经验记录<br>去加点经验吧~</div>'; }
+    else { keys.forEach(k=>{
       const d=parseKey(k); const items=groups[k].slice().sort((a,b)=>b.ts-a.ts); const dt=items.reduce((s,r)=>s+r.exp,0);
       const g=document.createElement("div"); g.className="s-group";
       const head=document.createElement("div"); head.className="s-group-head";
@@ -848,11 +1109,18 @@
                      '<div><span class="gt">+'+dt+'</span><span class="chev">▾</span></div>';
       const body=document.createElement("div"); body.className="s-items";
       items.forEach(r=>{ const it=document.createElement("div"); it.className="s-item";
-        it.innerHTML='<div><div class="e">'+escapeHtml(r.name)+'</div><div class="t">'+fmtTime(r.ts)+'</div></div>'+
+        const tag = r.task?' <span class="cat-chip" style="background:rgba(0,240,255,.18);color:var(--accent)">任务</span>' : (r.habit?' <span class="cat-chip" style="background:rgba(124,77,255,.2);color:#b39dff">习惯</span>':'');
+        const cat=data.cats.find(c=>c.id===r.cat);
+        const catHtml=cat?(' <span class="cat-chip" style="background:'+cat.color+'">'+escapeHtml(cat.name)+'</span>'):"";
+        it.innerHTML='<div><div class="e">'+escapeHtml(r.name)+tag+catHtml+'</div><div class="t">'+fmtTime(r.ts)+'</div></div>'+
                     '<div class="v '+(r.exp>=0?"pos":"")+'">'+(r.exp>=0?"+":"")+r.exp+'</div>'; body.appendChild(it); });
       head.addEventListener("click",()=>g.classList.toggle("collapsed")); g.appendChild(head); g.appendChild(body); box.appendChild(g);
-    });
+    }); }
+    drawTrend(); drawCat();
+    if(showHeat){ renderHeat(); $("heatMap").classList.remove("hidden"); }
+    else { $("heatMap").classList.add("hidden"); }
   }
+  let showHeat=false;
   function shiftMonth(delta){ statsMonth+=delta; if(statsMonth<1){statsMonth=12;statsYear--;} if(statsMonth>12){statsMonth=1;statsYear++;} renderStats(); }
   $("ppPrevM").addEventListener("click",()=>shiftMonth(-1));
   $("ppNextM").addEventListener("click",()=>shiftMonth(1));
@@ -977,8 +1245,12 @@
   $("settingsClose").addEventListener("click",()=>hideModal(settingsModal));
   $("profileClose").addEventListener("click",()=>hideModal(profileModal));
   $("delCancel").addEventListener("click",()=>{ pendingDelete=null; hideModal(delModal); });
+  $("delBack").addEventListener("click",()=>{ pendingDelete=null; hideModal(delModal); });
+  $("heatToggle").addEventListener("change",(e)=>{ showHeat=e.target.checked; const hm=$("heatMap"); if(showHeat){ renderHeat(); hm.classList.remove("hidden"); } else { hm.classList.add("hidden"); } });
   document.querySelectorAll("[data-close]").forEach(el=>el.addEventListener("click",()=>{
-    hideModal(addModal); hideModal(statsModal); hideModal(settingsModal); hideModal(profileModal); hideModal(delModal); closeSidebar();
+    hideModal(addModal); hideModal(statsModal); hideModal(settingsModal); hideModal(profileModal); hideModal(delModal);
+    hideModal($("catModal")); hideModal($("taskEditorModal")); hideModal($("habitEditorModal")); hideModal($("editModal"));
+    closeSidebar();
   }));
 
   // ============ network / account UI ============
@@ -1004,7 +1276,8 @@
   function hideLogin(){ loginScreen.classList.add("hidden"); }
   async function doLogin(u, rawPass){
     curUser=u; try{ localStorage.setItem(LS_SESSION,u); }catch(e){}
-    if(isRegistered(curUser) && rawPass){ sessionPassword=rawPass; try{ localStorage.setItem(LS_SESSION_PW, rawPass); }catch(e){} }
+    sessionPassword=rawPass;
+    if(rawPass){ try{ localStorage.setItem(LS_SESSION_PW, await encSession(rawPass)); }catch(e){} }
     const acc=accounts[curUser]; data=(acc&&acc.data)?acc.data:defaultData();
     applyTheme(data.theme||"dark");
     if(!booted) initApp(); else renderAll();
@@ -1012,42 +1285,318 @@
     if(isRegistered(curUser)) cloudInit();
     updateAccountUI();
   }
-  $("lgLogin").addEventListener("click",()=>{
+  $("lgLogin").addEventListener("click", async ()=>{
     const u=$("lgUser").value.trim(), p=$("lgPw").value;
     if(!u||!p){ $("lgErr").textContent="请输入用户名和密码"; return; }
     const acc=accounts[u];
     if(!acc||!acc.pw){ $("lgErr").textContent="账号不存在，请先注册"; return; }
-    if(acc.pw!==cyrb53(p)){ $("lgErr").textContent="密码错误"; return; }
+    try{
+      if(typeof acc.pw==="string"){ if(acc.pw!==cyrb53(p)){ $("lgErr").textContent="密码错误"; return; } acc.pw=await pwHash(p); writeJSON(LS_ACCOUNTS,accounts); }
+      else if(!(await pwVerify(p, acc.pw))){ $("lgErr").textContent="密码错误"; return; }
+    }catch(e){ $("lgErr").textContent="登录校验失败，请重试"; return; }
     doLogin(u,p);
   });
-  $("lgReg").addEventListener("click",()=>{
+  $("lgReg").addEventListener("click", async ()=>{
     const u=$("lgUser").value.trim(), p=$("lgPw").value;
     if(!u||!p){ $("lgErr").textContent="用户名和密码均不能为空"; return; }
     if(accounts[u]&&accounts[u].pw){ $("lgErr").textContent="该用户名已被注册"; return; }
-    accounts[u]={pw:cyrb53(p),data:defaultData(),updatedAt:0};
+    try{ accounts[u]={pw:await pwHash(p),data:defaultData(),updatedAt:0}; }
+    catch(e){ accounts[u]={pw:cyrb53(p),data:defaultData(),updatedAt:0}; }
     writeJSON(LS_ACCOUNTS,accounts);
     doLogin(u,p);
   });
   $("lgGuest").addEventListener("click",()=>doLogin(GUEST,null));
 
+  // ============ helpers: range / totals / streak / badges ============
+  function inRange(key, start, end){
+    if((!start) && (!end)) return true;
+    if(start && key < start) return false;
+    if(end && key > end) return false;
+    return true;
+  }
+  function dayTotalAll(key){ let s=dayTotal(key); (data.tasks||[]).forEach(t=>{ if(t.done && t.done[key]) s+=t.exp; }); (data.habits||[]).forEach(h=>{ if(h.done && h.done[key]) s+=h.exp; }); return s; }
+  function inMonth(k,y,m){ const p=k.split("-"); return +p[0]===y && +p[1]===m; }
+  function monthExp(y,m){ let s=0;
+    for(const k in data.records){ if(inMonth(k,y,m)) data.records[k].forEach(r=>s+=r.exp); }
+    (data.tasks||[]).forEach(t=>{ for(const dk in t.done){ if(t.done[dk] && inMonth(dk,y,m)) s+=t.exp; } });
+    (data.habits||[]).forEach(h=>{ for(const dk in h.done){ if(h.done[dk] && inMonth(dk,y,m)) s+=h.exp; } });
+    return s; }
+  function fillCatSelect(sel, cur, firstLabel){
+    sel.innerHTML='<option value="">'+(firstLabel||"无分类")+'</option>';
+    (data.cats||[]).forEach(c=>{ const o=document.createElement("option"); o.value=c.id; o.textContent=c.name; if(c.id===cur) o.selected=true; sel.appendChild(o); });
+  }
+  function getStreak(){
+    let cur=startOfDay(new Date()); let n=0; let guard=0;
+    while(guard++<4000){ const k=fmtKey(cur); if(dayTotalAll(k)>0){ n++; cur=addDays(cur,-1); } else break; }
+    return n;
+  }
+  function renderStreak(){
+    const n=getStreak();
+    $("streakLine").innerHTML = n>0 ? ("🔥 连续打卡 <b>"+n+"</b> 天") : "连续打卡 0 天，今天去加点经验吧~";
+  }
+  // 成就系统已移除（用户要求）
+
+
+  // ============ snack ============
+  let snackTimer=null;
+  function showSnack(msg, cb){
+    const s=$("snack"); s.innerHTML=""; s.appendChild(document.createTextNode(msg));
+    if(cb){ const b=document.createElement("button"); b.textContent="撤销"; b.addEventListener("click",()=>{ if(cb) cb(); }); s.appendChild(b); }
+    s.classList.add("show");
+    if(snackTimer) clearTimeout(snackTimer);
+    snackTimer=setTimeout(hideSnack, cb?5000:2200);
+  }
+  function hideSnack(){ $("snack").classList.remove("show"); }
+
+  // ============ edit record ============
+  let editingRec=null;
+  function openEdit(rec){ editingRec=rec; $("editName").value=rec.name; $("editExp").value=rec.exp; fillCatSelect($("editCat"), rec.cat); showModal($("editModal")); }
+  $("editCancel").addEventListener("click",()=>{ editingRec=null; hideModal($("editModal")); });
+  $("editSave").addEventListener("click",()=>{
+    if(!editingRec) return;
+    const old=editingRec.exp;
+    const name=$("editName").value.trim()||"未命名";
+    let exp=parseInt($("editExp").value,10); if(isNaN(exp)||exp<0) exp=0;
+    const cat=$("editCat").value||"";
+    setExp(exp-old);
+    editingRec.name=name; editingRec.exp=exp; editingRec.cat=cat;
+    editingRec=null; save(); hideModal($("editModal")); renderRecords(); updateChipStates();
+  });
+
+  // ============ categories ============
+  const CAT_COLORS=["#E53935","#FB8C00","#FDD835","#43A047","#00ACC1","#1E88E5","#8E24AA"];
+  let catSelColor=CAT_COLORS[0];
+  function renderCatPalette(){
+    const pal=$("catPalette"); if(!pal) return; pal.innerHTML="";
+    CAT_COLORS.forEach(col=>{ const s=document.createElement("div"); s.className="cat-swatch"+(col===catSelColor?" sel":""); s.style.background=col; s.style.color=col; s.addEventListener("click",()=>{ catSelColor=col; renderCatPalette(); }); pal.appendChild(s); });
+  }
+  function openCat(){ renderCatList(); renderCatPalette(); showModal($("catModal")); }
+  function renderCatList(){
+    const box=$("catList"); box.innerHTML="";
+    (data.cats||[]).forEach(c=>{
+      const row=document.createElement("div"); row.className="row";
+      row.innerHTML='<span class="dot" style="background:'+c.color+'"></span><span class="nm">'+escapeHtml(c.name)+'</span><button class="i-del">🗑</button>';
+      row.querySelector(".i-del").addEventListener("click",()=>{ data.cats=data.cats.filter(x=>x.id!==c.id); save(); renderCatList(); fillCatSelect($("evtCat"),""); fillCatSelect($("editCat"),""); fillCatSelect($("statsCat"),""); });
+      box.appendChild(row);
+    });
+    if(!(data.cats||[]).length) box.innerHTML='<div class="s-empty">还没有分类<br>在上方添加你的第一个分类</div>';
+  }
+  $("catSave").addEventListener("click",()=>{
+    const name=$("catName").value.trim();
+    if(!name){ showSnack("请输入分类名称"); return; }
+    data.cats.push({id:uid(), name, color:catSelColor}); $("catName").value="";
+    save(); renderCatList(); fillCatSelect($("evtCat"),""); fillCatSelect($("editCat"),""); fillCatSelect($("statsCat"),"");
+  });
+  $("catClose").addEventListener("click",()=>hideModal($("catModal")));
+  $("catBtn").addEventListener("click",()=>{ closeSidebar(); openCat(); });
+  $("catAdd").addEventListener("click",(e)=>{ e.stopPropagation(); closeSidebar(); openCat(); });
+
+  // ============ daily tasks ============
+  let editingTask=null;
+  function renderTaskDrawer(){
+    const box=$("taskDrawer"); if(!box) return; box.innerHTML="";
+    (data.tasks||[]).forEach(t=>{
+      const doneTimes=Object.values(t.done||{}).filter(Boolean).length;
+      const item=document.createElement("div"); item.className="sb-task-item";
+      item.innerHTML='<div class="ti-main"><div class="ti-name">'+escapeHtml(t.name)+'</div><div class="ti-meta">+'+t.exp+' · '+t.start+' ~ '+t.end+' · 已完成'+doneTimes+'次</div></div><button class="ti-del" title="删除">🗑</button>';
+      item.querySelector(".ti-main").addEventListener("click",()=>openTaskEditor(t));
+      item.querySelector(".ti-del").addEventListener("click",(e)=>{ e.stopPropagation(); openDeleteTask(t); });
+      box.appendChild(item);
+    });
+    if(!(data.tasks||[]).length) box.innerHTML='<div class="sb-drawer-empty">还没有每日任务<br>点下方「＋ 新建每日任务」添加</div>';
+  }
+  function openTaskEditor(task){ editingTask=task;
+    $("taskName").value=task?task.name:""; $("taskExp").value=task?task.exp:"";
+    $("taskStart").value=task?task.start:selectedKey; $("taskEnd").value=task?task.end:selectedKey;
+    showModal($("taskEditorModal"));
+  }
+  $("taskEditorCancel").addEventListener("click",()=>{ editingTask=null; hideModal($("taskEditorModal")); });
+  $("taskEditorSave").addEventListener("click",()=>{
+    const name=$("taskName").value.trim(); if(!name){ showSnack("请输入任务名称"); return; }
+    let exp=parseInt($("taskExp").value,10); if(isNaN(exp)||exp<0) exp=0;
+    let start=$("taskStart").value, end=$("taskEnd").value; if(!start||!end) return;
+    if(end<start) end=start;
+    if(editingTask){ editingTask.name=name; editingTask.exp=exp; editingTask.start=start; editingTask.end=end; }
+    else { data.tasks.push({id:uid(), name, exp, start, end, done:{}}); }
+    editingTask=null; save(); hideModal($("taskEditorModal")); renderTaskDrawer(); renderRecords(); updateChipStates();
+  });
+  function taskEl(t){
+    const el=document.createElement("div"); el.className="item";
+    const done=!!(t.done && t.done[selectedKey]); if(done) el.classList.add("done");
+    el.innerHTML='<div class="chk">'+(done?"✓":"")+'</div><div class="i-name">'+escapeHtml(t.name)+'</div><div class="i-exp">+'+t.exp+'</div>';
+    el.querySelector(".chk").addEventListener("click",(e)=>{ e.stopPropagation(); toggleTask(t); });
+    bindLongPress(el, {type:"task", task:t});
+    return el;
+  }
+  function toggleTask(t){
+    const k=selectedKey;
+    if(t.done[k]){ t.done[k]=false; setExp(-t.exp); }
+    else { t.done[k]=true; setExp(t.exp); }
+    save(); renderRecords(); updateChipStates();
+  }
+  $("taskToggle").addEventListener("click",()=>{ $("taskAcc").classList.toggle("open"); });
+  $("taskAdd").addEventListener("click",()=>{ openTaskEditor(null); });
+
+  // ============ habits ============
+  let editingHabit=null;
+  function renderHabitDrawer(){
+    const box=$("habitDrawer"); if(!box) return; box.innerHTML="";
+    (data.habits||[]).forEach(h=>{
+      const doneTimes=Object.values(h.done||{}).filter(Boolean).length;
+      const item=document.createElement("div"); item.className="sb-task-item";
+      item.innerHTML='<div class="ti-main"><div class="ti-name">'+escapeHtml(h.name)+'</div><div class="ti-meta">+'+h.exp+(h.pen?(' · '+h.pen+'天未做扣'+h.penExp):'')+' · '+h.start+' ~ '+h.end+' · 已完成'+doneTimes+'次</div></div><button class="ti-del" title="删除">🗑</button>';
+      item.querySelector(".ti-main").addEventListener("click",()=>openHabitEditor(h));
+      item.querySelector(".ti-del").addEventListener("click",(e)=>{ e.stopPropagation(); openDeleteHabit(h); });
+      box.appendChild(item);
+    });
+    if(!(data.habits||[]).length) box.innerHTML='<div class="sb-drawer-empty">还没有习惯<br>点下方「＋ 新建习惯」添加</div>';
+  }
+  function openHabitEditor(habit){ editingHabit=habit;
+    $("habitName").value=habit?habit.name:""; $("habitExp").value=habit?habit.exp:"";
+    $("habitPen").value=habit?habit.pen:""; $("habitPenExp").value=habit?habit.penExp:"";
+    $("habitStart").value=habit?habit.start:selectedKey; $("habitEnd").value=habit?habit.end:selectedKey;
+    showModal($("habitEditorModal"));
+  }
+  $("habitEditorCancel").addEventListener("click",()=>{ editingHabit=null; hideModal($("habitEditorModal")); });
+  $("habitEditorSave").addEventListener("click",()=>{
+    const name=$("habitName").value.trim(); if(!name){ showSnack("请输入习惯名称"); return; }
+    let exp=parseInt($("habitExp").value,10); if(isNaN(exp)||exp<0) exp=0;
+    let pen=parseInt($("habitPen").value,10); if(isNaN(pen)||pen<1) pen=0;
+    let penExp=parseInt($("habitPenExp").value,10); if(isNaN(penExp)||penExp<0) penExp=0;
+    let start=$("habitStart").value, end=$("habitEnd").value; if(!start||!end) return;
+    if(end<start) end=start;
+    if(editingHabit){ editingHabit.name=name; editingHabit.exp=exp; editingHabit.pen=pen; editingHabit.penExp=penExp; editingHabit.start=start; editingHabit.end=end; }
+    else { data.habits.push({id:uid(), name, exp, pen, penExp, start, end, done:{}}); }
+    editingHabit=null; save(); hideModal($("habitEditorModal")); renderHabitDrawer(); renderRecords(); updateChipStates();
+  });
+  function missedStreak(habit, key){
+    let n=0; let d=parseKey(key); let guard=0;
+    while(guard++<4000 && inRange(fmtKey(d), habit.start, habit.end)){
+      if(habit.done && habit.done[fmtKey(d)]) break;
+      n++; d=addDays(d,-1);
+    }
+    return n;
+  }
+  function evaluateHabitPenalties(key){
+    (data.habits||[]).forEach(h=>{
+      if(!inRange(key, h.start, h.end)) return;
+      if(h.pen && h.penExp && h.pen>0){
+        const ms=missedStreak(h, key);
+        if(ms>=h.pen && h.penalizedFor!==key){
+          setExp(-h.penExp); h.penalizedFor=key;
+          if(!data.records[key]) data.records[key]=[];
+          data.records[key].push({id:uid(), name:"⚠ 惩罚："+h.name, exp:-h.penExp, cat:"", ts:Date.now(), penalty:true});
+          showSnack("⚠ 习惯「"+h.name+"」已连续"+ms+"天未完成，扣除"+h.penExp+"经验");
+        }
+      }
+    });
+  }
+  function habitEl(h){
+    const el=document.createElement("div"); el.className="item";
+    const done=!!(h.done && h.done[selectedKey]); if(done) el.classList.add("done");
+    el.innerHTML='<div class="chk">'+(done?"✓":"")+'</div><div class="i-name">'+escapeHtml(h.name)+'</div><div class="i-exp">+'+h.exp+'</div>';
+    el.querySelector(".chk").addEventListener("click",(e)=>{ e.stopPropagation(); toggleHabit(h); });
+    bindLongPress(el, {type:"habit", habit:h});
+    return el;
+  }
+  function toggleHabit(h){
+    const k=selectedKey;
+    if(h.done[k]){ h.done[k]=false; setExp(-h.exp); }
+    else { h.done[k]=true; setExp(h.exp); evaluateHabitPenalties(k); }
+    save(); renderRecords(); updateChipStates();
+  }
+  $("habitToggle").addEventListener("click",()=>{ $("habitAcc").classList.toggle("open"); });
+  $("habitAdd").addEventListener("click",()=>{ openHabitEditor(null); });
+
+  // ============ stats charts ============
+  function cssVar(n){ return (getComputedStyle(document.documentElement).getPropertyValue(n)||"").trim(); }
+  function drawTrend(){
+    const cv=$("trendChart"); if(!cv) return;
+    const dpr=window.devicePixelRatio||1; const w=cv.clientWidth||300, h=150;
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+    const ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+    const now=new Date(); const months=[];
+    for(let i=11;i>=0;i--){ const d=new Date(now.getFullYear(), now.getMonth()-i, 1); months.push({y:d.getFullYear(), m:d.getMonth()+1, label:(d.getMonth()+1)+"月"}); }
+    const vals=months.map(mo=>monthExp(mo.y, mo.m));
+    const max=Math.max(1, ...vals);
+    const padL=8, padR=8, padT=12, padB=20, cw=w-padL-padR, ch=h-padT-padB;
+    const accent=cssVar("--accent")||"#00F0FF", muted=cssVar("--muted")||"#8aa0b8";
+    ctx.strokeStyle="rgba(128,128,128,.18)"; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(padL,padT+ch); ctx.lineTo(padL+cw,padT+ch); ctx.stroke();
+    const pts=vals.map((v,i)=>{ const x=padL + (vals.length===1?cw/2:(cw*i/(vals.length-1))); const y=padT+ch-(v/max)*ch; return [x,y]; });
+    if(pts.length>1){
+      const grad=ctx.createLinearGradient(0,padT,0,padT+ch); grad.addColorStop(0, accent+"55"); grad.addColorStop(1, accent+"00");
+      ctx.beginPath(); ctx.moveTo(pts[0][0], padT+ch); pts.forEach(p=>ctx.lineTo(p[0],p[1])); ctx.lineTo(pts[pts.length-1][0], padT+ch); ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+      ctx.beginPath(); pts.forEach((p,i)=> i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.strokeStyle=accent; ctx.lineWidth=2; ctx.lineJoin="round"; ctx.stroke();
+      pts.forEach(p=>{ ctx.beginPath(); ctx.arc(p[0],p[1],2.5,0,7); ctx.fillStyle=accent; ctx.fill(); });
+    }
+    ctx.fillStyle=muted; ctx.font="10px sans-serif"; ctx.textAlign="center";
+    [0, Math.floor((pts.length-1)/2), pts.length-1].filter((v,i,a)=>a.indexOf(v)===i).forEach(i=>{ ctx.fillText(months[i].label, pts[i][0], h-6); });
+  }
+  function drawCat(){
+    const cv=$("catChart"); if(!cv) return;
+    const dpr=window.devicePixelRatio||1; const w=cv.clientWidth||300, h=150;
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+    const ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+    const byCat={}; let uncat=0;
+    for(const k in data.records){ const p=k.split("-"); if(+p[0]===statsYear && +p[1]===statsMonth) data.records[k].forEach(r=>{ if(r.cat){ byCat[r.cat]=(byCat[r.cat]||0)+r.exp; } else uncat+=r.exp; }); }
+    const segs=[];
+    Object.keys(byCat).forEach(id=>{ const c=data.cats.find(x=>x.id===id); if(c) segs.push({name:c.name, color:c.color, value:byCat[id]}); });
+    if(uncat>0) segs.push({name:"未分类", color:"#8aa0b8", value:uncat});
+    const total=segs.reduce((s,x)=>s+x.value,0);
+    const text=cssVar("--text")||"#E6F1FF", muted=cssVar("--muted")||"#8aa0b8", panel=cssVar("--panel")||"#121826";
+    if(total<=0){ ctx.fillStyle=muted; ctx.font="12px sans-serif"; ctx.textAlign="center"; ctx.fillText("本月暂无分类数据", w/2, h/2); return; }
+    const cx=w/2, cy=h/2, R=Math.min(w,h)/2-12, r=R*0.55;
+    let ang=-Math.PI/2;
+    segs.forEach(s=>{ const a2=ang + s.value/total*Math.PI*2; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,R,ang,a2); ctx.closePath(); ctx.fillStyle=s.color; ctx.fill(); ang=a2; });
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,7); ctx.fillStyle=panel; ctx.fill();
+    ctx.font="10px sans-serif"; ctx.textAlign="left";
+    segs.forEach((s,i)=>{ const ly=10+i*14; ctx.fillStyle=s.color; ctx.fillRect(6, ly-7, 9,9); ctx.fillStyle=text; ctx.fillText(s.name+" "+s.value, 18, ly); });
+  }
+  function renderHeat(){
+    const box=$("heatMap"); if(!box) return; box.innerHTML="";
+    const year=statsYear; const days=[]; const start=new Date(year,0,1), end=new Date(year,11,31);
+    for(let d=new Date(start); d<=end; d=addDays(d,1)) days.push(fmtKey(d));
+    let max=0; const vals={}; days.forEach(k=>{ const v=dayTotalAll(k); vals[k]=v; if(v>max) max=v; });
+    const colors=["var(--glass-border)","rgba(0,240,255,.25)","rgba(0,240,255,.5)","rgba(0,240,255,.75)","#00F0FF"];
+    const thr=max/4||1;
+    days.forEach(k=>{ const i=document.createElement("i"); const v=vals[k]; let lvl=0; if(v>0) lvl=Math.min(4, Math.ceil(v/thr)); i.style.background=colors[lvl]; i.title=k+": "+v+" 经验"; box.appendChild(i); });
+  }
+  $("statsCat").addEventListener("change", renderStats);
+
+  // ============ export / import / goal ============
+  $("exportBtn").addEventListener("click",()=>{
+    const blob=new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="蛋丁备份_"+fmtKey(startOfDay(new Date()))+".json"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  });
+  $("importBtn").addEventListener("click",()=>$("importFile").click());
+  $("importFile").addEventListener("change",e=>{
+    const f=e.target.files&&e.target.files[0]; if(!f) return;
+    const r=new FileReader(); r.onload=()=>{ try{ const obj=JSON.parse(r.result);
+      data=Object.assign(defaultData(), obj);
+      save(); renderAll(); showSnack("已导入备份");
+    }catch(err){ showSnack("导入失败：文件格式不正确"); } };
+    r.readAsText(f); e.target.value="";
+  });
+
   // ============ render all ============
-  function renderAll(){ renderAvatar(); applyLevel(); renderRecords(); updateChipStates(); updateAccountUI(); updateThemeButtons(); }
+  function renderAll(){ renderAvatar(); applyLevel(); renderRecords(); updateChipStates(); updateAccountUI(); updateThemeButtons(); renderStreak(); renderTaskDrawer(); renderHabitDrawer(); }
 
   // ============ init ============
   function initApp(){
     booted=true;
     topNick.textContent=data.nickname; sbNick.textContent=data.nickname;
     renderAll(); initDateBar();
+    evaluateHabitPenalties(fmtKey(startOfDay(new Date())));
     window.addEventListener("online",()=>{ updateNet(); if(isRegistered(curUser)) cloudInit(); });
     window.addEventListener("offline",()=>{ updateNet(); });
   }
 
   // boot
-  (function boot(){
+  (async function boot(){
     const sess=localStorage.getItem(LS_SESSION);
     if(sess && accounts[sess]){
       curUser=sess;
-      try{ sessionPassword=localStorage.getItem(LS_SESSION_PW)||null; }catch(e){}
+      try{ const blob=localStorage.getItem(LS_SESSION_PW)||null; sessionPassword = blob? await decSession(blob):null; }catch(e){ sessionPassword=null; }
       const acc=accounts[curUser]; data=(acc&&acc.data)?acc.data:defaultData();
       applyTheme(data.theme||"dark"); initApp();
       if(isRegistered(curUser)) cloudInit();
